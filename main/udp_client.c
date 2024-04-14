@@ -12,7 +12,6 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
-//#include "freertos/timers.h"
 #include "esp_system.h"
 #include "esp_log.h"
 #include "driver/twai.h" // Update from V4.2
@@ -70,7 +69,7 @@ void udp_client_task(void *pvParameters) {
 			int rtr = rx_msg.rtr;
 			ESP_LOGI(TAG, "ext=%x rtr=%x", ext, rtr);
 			if (ext == 0) {
-				sprintf(buffer, "Standard ID: 0x%03"PRIx32"		", rx_msg.identifier);
+				sprintf(buffer, "Standard ID: 0x%03"PRIx32"     ", rx_msg.identifier);
 			} else {
 				sprintf(buffer, "Extended ID: 0x%08"PRIx32, rx_msg.identifier);
 			}

@@ -27,7 +27,7 @@ if __name__=='__main__':
 		data = client.recv(buffer_size)
 		if (type(data) is bytes):
 			data = data.decode('utf-8')
-		print("[*] Received Data : {}".format(data))
+		print("{}".format(data))
 
 		#client.send(b"ACK!!")
 
