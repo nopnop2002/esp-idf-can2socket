@@ -1,7 +1,7 @@
 # esp-idf-can2socket
 CANbus to BSD-Socket bridge using esp32.   
 It's purpose is to be a bridge between a CAN-Bus and a BSD-Socket.    
-With a rich library of python, you can visualize and perform statistical processing on CAN data.   
+You can use Python's rich library to visualize CAN data, perform statistical processing, and transfer it to other computers.   
 This project does not include any visualization or statistical processing.   
 Many python visualization and statistical processing samples are available on the Internet.   
 
