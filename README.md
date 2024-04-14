@@ -115,6 +115,16 @@ You can select the display format.
 
 You can choose between TCP and UDP protocols.   
 ![config-protocol-tcp](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/40266a72-f1a8-45ea-a2d1-9ef945136260)
+
+TCP Host is specified by one of the following.
+- IP address   
+ ```192.168.10.20```   
+- mDNS host name   
+ ```tcp-server.local```   
+- Fully Qualified Domain Name   
+ ```tcp-server.mydomain.com```
+
+
 ![config-protocol-udp-1](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/554b42ad-7230-4dae-b323-4444d82e92d7)
 
 There are the following four methods for specifying the UDP Address.   
