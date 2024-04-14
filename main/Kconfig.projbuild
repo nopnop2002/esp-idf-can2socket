@@ -114,6 +114,8 @@ menu "Application Configuration"
 				bool "Display Format is JSON"
 			config FORMAT_XML
 				bool "Display Format is XML"
+			config FORMAT_CSV
+				bool "Display Format is CSV"
 		endchoice
 
 		choice PROTOCOL

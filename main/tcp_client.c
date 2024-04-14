@@ -70,6 +70,7 @@ esp_err_t connect_server(int *sock) {
 int format_text(twai_message_t rx_msg, char * buffer, int blen);
 int format_json(twai_message_t rx_msg, char * buffer, int blen);
 int format_xml(twai_message_t rx_msg, char * buffer, int blen);
+int format_csv(twai_message_t rx_msg, char * buffer, int blen);
 
 void tcp_client_task(void *pvParameters)
 {
@@ -99,6 +100,8 @@ void tcp_client_task(void *pvParameters)
 			format_json(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_XML
 			format_xml(rx_msg, buffer, sizeof(buffer)-1);
+#elif CONFIG_FORMAT_CSV
+			format_csv(rx_msg, buffer, sizeof(buffer)-1);
 #endif
 			ret = send(sock, buffer, strlen(buffer), 0);
 			ESP_LOGI(TAG, "send ret=%d",ret);

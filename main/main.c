@@ -274,6 +274,45 @@ int format_xml(twai_message_t rx_msg, char * buffer, int blen) {
 	return strlen(buffer);
 }
 
+int format_csv(twai_message_t rx_msg, char * buffer, int blen) {
+	char wk[128];
+	if (rx_msg.rtr == 0) {
+		strcpy(buffer, "Data frame,");
+	} else {
+		strcpy(buffer, "Remote frame,");
+	}
+
+	if (rx_msg.extd == 0) {
+		sprintf(wk, "Standard,0x%03"PRIx32",", rx_msg.identifier);
+	} else {
+		sprintf(wk, "Extended,0x%08"PRIx32",", rx_msg.identifier);
+	}
+	strcat(buffer, wk);
+
+	sprintf(wk, "%d,", rx_msg.data_length_code);
+	strcat(buffer, wk);
+
+	if (rx_msg.rtr == 0) {
+		for (int i=0;i<6;i++) {
+			if (i < rx_msg.data_length_code) {
+				sprintf(wk, "0x%02x,", rx_msg.data[i]);
+			} else {
+				sprintf(wk, ",");
+			}
+			strcat(buffer, wk);
+		}
+	} else {
+		sprintf(wk, ",,,,,");
+		strcat(buffer, wk);
+	}
+	if (strlen(buffer) > blen) {
+		ESP_LOGE(TAG, "buffer is too small");
+	}
+	ESP_LOGI(TAG, "[%s]", buffer);
+	return strlen(buffer);
+}
+
+
 void app_main()
 {
 	// Initialize NVS

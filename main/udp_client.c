@@ -23,6 +23,7 @@ static const char *TAG = "UDP-CLIENT";
 int format_text(twai_message_t rx_msg, char * buffer, int blen);
 int format_json(twai_message_t rx_msg, char * buffer, int blen);
 int format_xml(twai_message_t rx_msg, char * buffer, int blen);
+int format_csv(twai_message_t rx_msg, char * buffer, int blen);
 
 extern QueueHandle_t xQueueTwai;
 
@@ -72,6 +73,8 @@ void udp_client_task(void *pvParameters) {
 			format_json(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_XML
 			format_xml(rx_msg, buffer, sizeof(buffer)-1);
+#elif CONFIG_FORMAT_CSV
+			format_csv(rx_msg, buffer, sizeof(buffer)-1);
 #endif
 			int buflen = strlen(buffer);
 			ret = sendto(sock, buffer, buflen, 0, (struct sockaddr *)&addr, sizeof(addr));
