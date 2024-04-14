@@ -99,7 +99,7 @@ idf.py flash
 
 
 ## Socket Setting   
-You can select the output format.   
+You can select the display format.   
 
 ![config-format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/953042da-0de8-42f3-89e9-1a08ca112817)
 ![format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/835de76f-562c-4b85-a23a-5748f9cb8a80)
