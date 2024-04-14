@@ -104,9 +104,12 @@ You can select the display format.
 ![config-format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/953042da-0de8-42f3-89e9-1a08ca112817)
 ![format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/835de76f-562c-4b85-a23a-5748f9cb8a80)
 
-
 ![config-format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/070bb0eb-c124-4e4f-87c6-b78f2c36a8c8)
 ![format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/092f3f7b-44d4-474d-ab96-ab2ce6239954)
+
+![config-format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/b77cb217-16ae-48aa-b0d0-e3ac9e002d90)
+![format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/36c95acd-bb1a-4168-b218-c12d0d100a80)
+
 
 You can choose between TCP and UDP protocols.   
 ![config-protocol-tcp](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/40266a72-f1a8-45ea-a2d1-9ef945136260)

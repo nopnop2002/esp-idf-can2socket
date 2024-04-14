@@ -67,8 +67,9 @@ esp_err_t connect_server(int *sock) {
 	}
 }
 
-int format_text(twai_message_t rx_msg, char * buffer);
-int format_json(twai_message_t rx_msg, char * buffer);
+int format_text(twai_message_t rx_msg, char * buffer, int blen);
+int format_json(twai_message_t rx_msg, char * buffer, int blen);
+int format_xml(twai_message_t rx_msg, char * buffer, int blen);
 
 void tcp_client_task(void *pvParameters)
 {
@@ -78,7 +79,7 @@ void tcp_client_task(void *pvParameters)
 	int ret;
 	bool connected = false;
 	twai_message_t rx_msg;
-	char buffer[256];
+	char buffer[512];
 	while (1) {
 		BaseType_t err = xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY);
 		if (err == pdTRUE) {
@@ -93,9 +94,11 @@ void tcp_client_task(void *pvParameters)
 			ESP_LOGI(TAG,"twai_receive identifier=0x%"PRIx32" flags=0x%"PRIx32" data_length_code=%d",
 				rx_msg.identifier, rx_msg.flags, rx_msg.data_length_code);
 #if CONFIG_FORMAT_TEXT
-			format_text(rx_msg, buffer);
+			format_text(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_JSON
-			format_json(rx_msg, buffer);
+			format_json(rx_msg, buffer, sizeof(buffer)-1);
+#elif CONFIG_FORMAT_XML
+			format_xml(rx_msg, buffer, sizeof(buffer)-1);
 #endif
 			ret = send(sock, buffer, strlen(buffer), 0);
 			ESP_LOGI(TAG, "send ret=%d",ret);

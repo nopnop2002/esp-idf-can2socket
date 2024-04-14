@@ -164,14 +164,9 @@ void udp_client_task(void *pvParameters);
 void tcp_client_task(void *pvParameters);
 void twai_task(void *pvParameters);
 
-int format_text(twai_message_t rx_msg, char * buffer) {
+int format_text(twai_message_t rx_msg, char * buffer, int blen) {
 	char wk[128];
-	//int ext = rx_msg.flags & 0x01; // flags is Deprecated
-	//int rtr = rx_msg.flags & 0x02; // flags is Deprecated
-	int ext = rx_msg.extd;
-	int rtr = rx_msg.rtr;
-	ESP_LOGI(TAG, "ext=%x rtr=%x", ext, rtr);
-	if (ext == 0) {
+	if (rx_msg.extd == 0) {
 		sprintf(buffer, "Standard ID: 0x%03"PRIx32"     ", rx_msg.identifier);
 	} else {
 		sprintf(buffer, "Extended ID: 0x%08"PRIx32, rx_msg.identifier);
@@ -180,7 +175,7 @@ int format_text(twai_message_t rx_msg, char * buffer) {
 	sprintf(wk, " DLC: %d	 Data: ", rx_msg.data_length_code);
 	strcat(buffer, wk);
 
-	if (rtr == 0) {
+	if (rx_msg.rtr == 0) {
 		for (int i = 0; i < rx_msg.data_length_code; i++) {
 			sprintf(wk, "0x%02x ", rx_msg.data[i]);
 			strcat(buffer, wk);
@@ -189,10 +184,13 @@ int format_text(twai_message_t rx_msg, char * buffer) {
 		sprintf(wk, "REMOTE REQUEST FRAME");
 		strcat(buffer, wk);
 	}
+	if (strlen(buffer) > blen) {
+		ESP_LOGE(TAG, "buffer is too small");
+	}
 	return strlen(buffer);
 }
 
-int format_json(twai_message_t rx_msg, char * buffer) {
+int format_json(twai_message_t rx_msg, char * buffer, int blen) {
 	// JSON Serialize
 	cJSON *root = cJSON_CreateObject();
 	if (rx_msg.rtr == 0) {
@@ -224,6 +222,55 @@ int format_json(twai_message_t rx_msg, char * buffer) {
 	// Cleanup
 	free((void *)my_json_string);
 	cJSON_Delete(root);
+	if (strlen(buffer) > blen) {
+		ESP_LOGE(TAG, "buffer is too small");
+	}
+	return strlen(buffer);
+}
+
+int format_xml(twai_message_t rx_msg, char * buffer, int blen) {
+	char wk[128];
+	strcpy(buffer, "<?xml version=\"1.0\"?>\n");
+	strcat(buffer, "<can>\n");
+	char TAB[2] = {0x09, 0x00};
+
+	if (rx_msg.rtr == 0) {
+		sprintf(wk, "%s<type>Data frame</type>\n", TAB);
+	} else {
+		sprintf(wk, "%s<type>Remote frame</type>\n", TAB);
+	}
+	strcat(buffer, wk);
+
+	if (rx_msg.extd == 0) {
+		sprintf(wk, "%s<format>Standard frame</format>\n", TAB);
+		strcat(buffer, wk);
+		sprintf(wk, "%s<id>0x%03"PRIx32"</id>\n", TAB, rx_msg.identifier);
+		strcat(buffer, wk);
+	} else {
+		sprintf(wk, "%s<format>Extended frame</format>\n", TAB);
+		strcat(buffer, wk);
+		sprintf(wk, "%s<id>0x%08"PRIx32"</id>\n", TAB, rx_msg.identifier);
+		strcat(buffer, wk);
+	}
+
+	sprintf(wk, "%s<length>%d</length>\n", TAB, rx_msg.data_length_code);
+	strcat(buffer, wk);
+
+	if (rx_msg.rtr == 0) {
+		sprintf(wk, "%s<data>\n", TAB);
+		strcat(buffer, wk);
+		for (int i = 0; i < rx_msg.data_length_code; i++) {
+			sprintf(wk, "%s%s<data%d>0x%02x</data%d>\n", TAB, TAB, i, rx_msg.data[i], i);
+			strcat(buffer, wk);
+		}
+		sprintf(wk, "%s</data>\n", TAB);
+		strcat(buffer, wk);
+	}
+
+	strcat(buffer, "</can>\n");
+	if (strlen(buffer) > blen) {
+		ESP_LOGE(TAG, "buffer is too small");
+	}
 	return strlen(buffer);
 }
 
