@@ -111,7 +111,7 @@ You can select the display format.
 ![format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/36c95acd-bb1a-4168-b218-c12d0d100a80)
 
 ![config-format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/69d6134e-0ead-404a-8594-f19710dc8886)
-![format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/1abcb456-92a8-43ad-9db8-77fd84c38b85)
+![format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/d2005409-edc3-4ce0-91f2-fde87e633791)
 
 You can choose between TCP and UDP protocols.   
 ![config-protocol-tcp](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/40266a72-f1a8-45ea-a2d1-9ef945136260)
