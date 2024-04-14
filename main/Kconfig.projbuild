@@ -104,18 +104,18 @@ menu "Application Configuration"
 	menu "Socket Setting"
 
 		choice FORMAT
-			bool "Select Display Format"
+			bool "Select Output Format"
 			default FORMAT_TEXT
 			help
-				Select Display Format.
+				Select Output Format.
 			config FORMAT_TEXT
-				bool "Display Format is plane text"
+				bool "Output Format is plane text"
 			config FORMAT_JSON
-				bool "Display Format is JSON"
+				bool "Output Format is JSON"
 			config FORMAT_XML
-				bool "Display Format is XML"
+				bool "Output Format is XML"
 			config FORMAT_CSV
-				bool "Display Format is CSV"
+				bool "Output Format is CSV"
 		endchoice
 
 		choice PROTOCOL

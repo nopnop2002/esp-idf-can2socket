@@ -99,18 +99,18 @@ idf.py flash
 
 
 ## Socket Setting   
-You can select the display format.   
+You can select the output format.   
 
-![config-format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/953042da-0de8-42f3-89e9-1a08ca112817)
+![config-format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/9b2ddbd2-7bd2-4626-80b7-72351df5edd1)
 ![format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/835de76f-562c-4b85-a23a-5748f9cb8a80)
 
-![config-format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/070bb0eb-c124-4e4f-87c6-b78f2c36a8c8)
+![config-format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/1fb2da0f-721b-4590-9af9-df323c0440fb)
 ![format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/092f3f7b-44d4-474d-ab96-ab2ce6239954)
 
-![config-format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/b77cb217-16ae-48aa-b0d0-e3ac9e002d90)
+![config-format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/6fc6d075-7656-4048-b619-7547541a59c3)
 ![format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/36c95acd-bb1a-4168-b218-c12d0d100a80)
 
-![config-format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/69d6134e-0ead-404a-8594-f19710dc8886)
+![config-format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/1caefeb3-0349-4ed2-8c29-fa13d4e0c17f)
 ![format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/d2005409-edc3-4ce0-91f2-fde87e633791)
 
 You can choose between TCP and UDP protocols.   
