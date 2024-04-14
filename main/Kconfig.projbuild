@@ -73,7 +73,7 @@ menu "Application Configuration"
 
 		config ENABLE_PRINT
 			bool "Output the received CAN FRAME to STDOUT"
-			default y
+			default n
 			help
 				Output the received CAN FRAME to STDOUT.
 
@@ -102,6 +102,17 @@ menu "Application Configuration"
 	endmenu
 
 	menu "Socket Setting"
+
+		choice FORMAT
+			bool "Select Display Format"
+			default FORMAT_TEXT
+			help
+				Select Display Format.
+			config FORMAT_TEXT
+				bool "Display Format is plane text"
+			config FORMAT_JSON
+				bool "Display Format is JSON"
+		endchoice
 
 		choice PROTOCOL
 			bool "Select Protocol"

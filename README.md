@@ -99,10 +99,18 @@ idf.py flash
 
 
 ## Socket Setting   
+You can select the output format.   
 
-You can use TCP and UDP protocols.   
-![config-tcp](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/ed25e88d-554e-4d5a-ba4e-b4f04fb779de)
-![config-udp-1](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/0eac274e-8887-4966-9d3d-2d1df2dfc3af)
+![config-format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/953042da-0de8-42f3-89e9-1a08ca112817)
+![format-text](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/835de76f-562c-4b85-a23a-5748f9cb8a80)
+
+
+![config-format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/070bb0eb-c124-4e4f-87c6-b78f2c36a8c8)
+![format-json](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/092f3f7b-44d4-474d-ab96-ab2ce6239954)
+
+You can choose between TCP and UDP protocols.   
+![config-protocol-tcp](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/40266a72-f1a8-45ea-a2d1-9ef945136260)
+![config-protocol-udp-1](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/554b42ad-7230-4dae-b323-4444d82e92d7)
 
 There are the following four methods for specifying the UDP Address.   
 
@@ -123,7 +131,7 @@ There are the following four methods for specifying the UDP Address.
  It is possible to cross the router with an address that specifies all octets, such as 192.168.10.41.   
  Both the sender and receiver must specify the Unicast address.
 
-![config-udp-2](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/e787817f-ac62-4cb7-89ed-a78bf2168082)
+![config-protocol-udp-2](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/2c44f1d0-e8bc-48f8-89de-fc9354f5e2ef)
 
 
 # Python code

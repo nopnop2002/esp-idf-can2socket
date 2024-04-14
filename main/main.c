@@ -21,6 +21,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "driver/twai.h" // Update from V4.2
+#include "cJSON.h"
 
 static const char *TAG = "MAIN";
 
@@ -162,6 +163,69 @@ bool wifi_init_sta(void)
 void udp_client_task(void *pvParameters);
 void tcp_client_task(void *pvParameters);
 void twai_task(void *pvParameters);
+
+int format_text(twai_message_t rx_msg, char * buffer) {
+	char wk[128];
+	//int ext = rx_msg.flags & 0x01; // flags is Deprecated
+	//int rtr = rx_msg.flags & 0x02; // flags is Deprecated
+	int ext = rx_msg.extd;
+	int rtr = rx_msg.rtr;
+	ESP_LOGI(TAG, "ext=%x rtr=%x", ext, rtr);
+	if (ext == 0) {
+		sprintf(buffer, "Standard ID: 0x%03"PRIx32"     ", rx_msg.identifier);
+	} else {
+		sprintf(buffer, "Extended ID: 0x%08"PRIx32, rx_msg.identifier);
+	}
+
+	sprintf(wk, " DLC: %d	 Data: ", rx_msg.data_length_code);
+	strcat(buffer, wk);
+
+	if (rtr == 0) {
+		for (int i = 0; i < rx_msg.data_length_code; i++) {
+			sprintf(wk, "0x%02x ", rx_msg.data[i]);
+			strcat(buffer, wk);
+		}
+	} else {
+		sprintf(wk, "REMOTE REQUEST FRAME");
+		strcat(buffer, wk);
+	}
+	return strlen(buffer);
+}
+
+int format_json(twai_message_t rx_msg, char * buffer) {
+	// JSON Serialize
+	cJSON *root = cJSON_CreateObject();
+	if (rx_msg.rtr == 0) {
+		cJSON_AddStringToObject(root, "Type", "Data frame");
+	} else {
+		cJSON_AddStringToObject(root, "Type", "Remote frame");
+	}
+	if (rx_msg.extd == 0) {
+		cJSON_AddStringToObject(root, "Format", "Standard frame");
+	} else {
+		cJSON_AddStringToObject(root, "Format", "Extended frame");
+	}
+	cJSON_AddNumberToObject(root, "ID", rx_msg.identifier);
+	cJSON_AddNumberToObject(root, "Length", rx_msg.data_length_code);
+	cJSON *intArray;
+	int i_numbers[8];
+	for(int i=0;i<rx_msg.data_length_code;i++) {
+		i_numbers[i] = rx_msg.data[i];
+	}
+
+	if (rx_msg.data_length_code > 0) {
+		intArray = cJSON_CreateIntArray(i_numbers, rx_msg.data_length_code);
+		cJSON_AddItemToObject(root, "Data", intArray);
+	}
+	const char *my_json_string = cJSON_Print(root);
+	ESP_LOGD(TAG, "my_json_string\n%s",my_json_string);
+	strcpy(buffer, my_json_string);
+
+	// Cleanup
+	free((void *)my_json_string);
+	cJSON_Delete(root);
+	return strlen(buffer);
+}
 
 void app_main()
 {

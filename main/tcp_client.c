@@ -67,6 +67,9 @@ esp_err_t connect_server(int *sock) {
 	}
 }
 
+int format_text(twai_message_t rx_msg, char * buffer);
+int format_json(twai_message_t rx_msg, char * buffer);
+
 void tcp_client_task(void *pvParameters)
 {
 	ESP_LOGI(TAG, "Start TCP HOST=[%s] TCP PORT=%d", CONFIG_TCP_HOST, CONFIG_TCP_PORT);
@@ -75,8 +78,7 @@ void tcp_client_task(void *pvParameters)
 	int ret;
 	bool connected = false;
 	twai_message_t rx_msg;
-	char buffer[128];
-	char wk[128];
+	char buffer[256];
 	while (1) {
 		BaseType_t err = xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY);
 		if (err == pdTRUE) {
@@ -90,30 +92,13 @@ void tcp_client_task(void *pvParameters)
 
 			ESP_LOGI(TAG,"twai_receive identifier=0x%"PRIx32" flags=0x%"PRIx32" data_length_code=%d",
 				rx_msg.identifier, rx_msg.flags, rx_msg.data_length_code);
-			//int ext = rx_msg.flags & 0x01; // flags is Deprecated
-			//int rtr = rx_msg.flags & 0x02; // flags is Deprecated
-			int ext = rx_msg.extd;
-			int rtr = rx_msg.rtr;
-			ESP_LOGI(TAG, "ext=%x rtr=%x", ext, rtr);
-			if (ext == 0) {
-				sprintf(buffer, "Standard ID: 0x%03"PRIx32"     ", rx_msg.identifier);
-			} else {
-				sprintf(buffer, "Extended ID: 0x%08"PRIx32, rx_msg.identifier);
-			}
-
-			sprintf(wk, " DLC: %d	 Data: ", rx_msg.data_length_code);
-			strcat(buffer, wk);
-
-			if (rtr == 0) {
-				for (int i = 0; i < rx_msg.data_length_code; i++) {
-					sprintf(wk, "0x%02x ", rx_msg.data[i]);
-					strcat(buffer, wk);
-				}
-			} else {
-				sprintf(wk, "REMOTE REQUEST FRAME");
-				strcat(buffer, wk);
-			}
+#if CONFIG_FORMAT_TEXT
+			format_text(rx_msg, buffer);
+#elif CONFIG_FORMAT_JSON
+			format_json(rx_msg, buffer);
+#endif
 			ret = send(sock, buffer, strlen(buffer), 0);
+			ESP_LOGI(TAG, "send ret=%d",ret);
 			if (ret < 0) {
 				ESP_LOGW(TAG, "send fail ret=%d", ret);
 				connected = false;
