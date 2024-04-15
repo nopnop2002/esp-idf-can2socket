@@ -205,13 +205,13 @@ int format_json(twai_message_t rx_msg, char * buffer, int blen) {
 	}
 	cJSON_AddNumberToObject(root, "ID", rx_msg.identifier);
 	cJSON_AddNumberToObject(root, "Length", rx_msg.data_length_code);
-	cJSON *intArray;
-	int i_numbers[8];
-	for(int i=0;i<rx_msg.data_length_code;i++) {
-		i_numbers[i] = rx_msg.data[i];
-	}
 
 	if (rx_msg.data_length_code > 0) {
+		int i_numbers[8];
+		for(int i=0;i<rx_msg.data_length_code;i++) {
+			i_numbers[i] = rx_msg.data[i];
+		}
+		cJSON *intArray;
 		intArray = cJSON_CreateIntArray(i_numbers, rx_msg.data_length_code);
 		cJSON_AddItemToObject(root, "Data", intArray);
 	}
