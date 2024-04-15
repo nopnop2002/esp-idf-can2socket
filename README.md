@@ -117,6 +117,7 @@ You can select the output format.
 ![format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/d2005409-edc3-4ce0-91f2-fde87e633791)
 
 You can choose between TCP and UDP protocols.   
+ESP32 acts as a TCP client or a UDP client.   
 ![config-protocol-tcp](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/3e848d3a-8ba2-4f5e-a266-a7772aa7bc2c)
 
 TCP Host is specified by one of the following.
