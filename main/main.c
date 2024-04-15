@@ -277,15 +277,15 @@ int format_xml(twai_message_t rx_msg, char * buffer, int blen) {
 int format_csv(twai_message_t rx_msg, char * buffer, int blen) {
 	char wk[128];
 	if (rx_msg.rtr == 0) {
-		strcpy(buffer, "Data frame,");
+		strcpy(buffer, "\"Data frame\",");
 	} else {
-		strcpy(buffer, "Remote frame,");
+		strcpy(buffer, "\"Remote frame\",");
 	}
 
 	if (rx_msg.extd == 0) {
-		sprintf(wk, "Standard,0x%03"PRIx32",", rx_msg.identifier);
+		sprintf(wk, "\"Standard\",0x%03"PRIx32",", rx_msg.identifier);
 	} else {
-		sprintf(wk, "Extended,0x%08"PRIx32",", rx_msg.identifier);
+		sprintf(wk, "\"Extended\",0x%08"PRIx32",", rx_msg.identifier);
 	}
 	strcat(buffer, wk);
 

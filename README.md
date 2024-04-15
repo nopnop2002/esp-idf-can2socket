@@ -114,7 +114,7 @@ You can select the output format.
 ![format-xml](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/36c95acd-bb1a-4168-b218-c12d0d100a80)
 
 ![config-format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/1caefeb3-0349-4ed2-8c29-fa13d4e0c17f)
-![format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/d2005409-edc3-4ce0-91f2-fde87e633791)
+![format-csv](https://github.com/nopnop2002/esp-idf-can2socket/assets/6020549/dc26f63a-8f1c-4e87-98b6-f0f79d3e827a)
 
 You can choose between TCP and UDP protocols.   
 ESP32 acts as a TCP client or a UDP client.   
