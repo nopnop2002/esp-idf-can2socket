@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 #-*- encoding: utf-8 -*-
-import socket
 import argparse
+import socket
+import select
+import signal
+
+def handler(signal, frame):
+	global running
+	print('handler')
+	running = False
 
 server_ip = "0.0.0.0"
 if __name__=='__main__':
+	signal.signal(signal.SIGINT, handler)
+	running = True
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--port', type=int, help='tcp port', default=8080)
 	args = parser.parse_args()
@@ -16,19 +26,20 @@ if __name__=='__main__':
 	tcp_server.bind((server_ip, args.port))
 	tcp_server.listen(listen_num)
 
-	client,address = tcp_server.accept()
-	print("[*] Connected!! [ Source : {}]".format(address))
-	#client.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+	read_list = [tcp_server]
+	while running:
+		readable, writable, errored = select.select(read_list, [], [], 1)
+		#print("readable={}".format(readable))
+		for sock in readable:
+			if sock is tcp_server:
+				print("start accept")
+				tcp_client,address = tcp_server.accept()
+				print("Connected!! [ Source : {}]".format(address))
+				read_list.append(tcp_client)
+			elif sock is tcp_client:
+				msg = tcp_client.recv(1024)
+				if (type(msg) is bytes):
+					msg = msg.decode('utf-8')
+				print("{}".format(msg))
 
-	buffer_size = 1024
-	while True:
-		#client,address = tcp_server.accept()
-		#print("[*] Connected!! [ Source : {}]".format(address))
-		data = client.recv(buffer_size)
-		if (type(data) is bytes):
-			data = data.decode('utf-8')
-		print("{}".format(data))
-
-		#client.send(b"ACK!!")
-
-	client.close()
+	tcp_server.close()

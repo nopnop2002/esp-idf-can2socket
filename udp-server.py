@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 #-*- encoding: utf-8 -*-
-import sys
-import select, socket
-import time
-import signal
 import argparse
+import select, socket
+import signal
 
 def handler(signal, frame):
+	global running
 	print('handler')
-	sys.exit()
+	running = False
 
 if __name__=='__main__':
 	signal.signal(signal.SIGINT, handler)
+	running = True
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--port', type=int, help='udp port', default=8080)
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -20,14 +21,17 @@ if __name__=='__main__':
 	args = parser.parse_args()
 	print("args.port={}".format(args.port))
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	#s.bind(('<broadcast>', args.port)) # Limited broadcast address
-	s.bind(('0.0.0.0', args.port)) # Any address
-	s.setblocking(0)
+	udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	#udp_server.bind(('<broadcast>', args.port)) # Limited broadcast address
+	udp_server.bind(('0.0.0.0', args.port)) # Any address
+	udp_server.setblocking(0)
 
-	while True:
-		result = select.select([s],[],[])
+	while running:
+		result = select.select([udp_server],[],[])
 		msg = result[0][0].recv(1024)
 		if (type(msg) is bytes):
 			msg=msg.decode('utf-8')
-		print(msg)
+		print("{}".format(msg))
+
+	#print("socket close")
+	udp_server.close()
