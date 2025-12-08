@@ -27,7 +27,9 @@ if __name__=='__main__':
 	udp_server.setblocking(0)
 
 	while running:
-		result = select.select([udp_server],[],[])
+		result = select.select([udp_server],[],[],10)
+		#print("result[0]={} {} {}".format(result[0], type(result[0]), len(result[0])))
+		if (len(result[0]) == 0): continue
 		msg = result[0][0].recv(1024)
 		if (type(msg) is bytes):
 			msg=msg.decode('utf-8')
