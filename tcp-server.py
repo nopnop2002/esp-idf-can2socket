@@ -10,7 +10,6 @@ def handler(signal, frame):
 	print('handler')
 	running = False
 
-server_ip = "0.0.0.0"
 if __name__=='__main__':
 	signal.signal(signal.SIGINT, handler)
 	running = True
@@ -23,7 +22,7 @@ if __name__=='__main__':
 	listen_num = 5
 	tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	tcp_server.bind((server_ip, args.port))
+	tcp_server.bind(('', args.port))
 	tcp_server.listen(listen_num)
 
 	read_list = [tcp_server]
