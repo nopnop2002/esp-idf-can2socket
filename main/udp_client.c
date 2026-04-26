@@ -14,16 +14,17 @@
 #include "freertos/queue.h"
 #include "esp_system.h"
 #include "esp_log.h"
-#include "driver/twai.h" // Update from V4.2
 #include "esp_netif.h" // IP2STR
 #include "lwip/sockets.h"
 
+#include "frame.h"
+
 static const char *TAG = "UDP-CLIENT";
 
-int format_text(twai_message_t rx_msg, char * buffer, int blen);
-int format_json(twai_message_t rx_msg, char * buffer, int blen);
-int format_xml(twai_message_t rx_msg, char * buffer, int blen);
-int format_csv(twai_message_t rx_msg, char * buffer, int blen);
+int format_text(my_twai_frame_t rx_msg, char * buffer, int blen);
+int format_json(my_twai_frame_t rx_msg, char * buffer, int blen);
+int format_xml(my_twai_frame_t rx_msg, char * buffer, int blen);
+int format_csv(my_twai_frame_t rx_msg, char * buffer, int blen);
 
 extern QueueHandle_t xQueueTwai;
 
@@ -60,26 +61,31 @@ void udp_client_task(void *pvParameters) {
 	LWIP_ASSERT("sock >= 0", sock >= 0);
 
 	int ret;
-	twai_message_t rx_msg;
+	my_twai_frame_t rx_msg;
 	char buffer[512];
 	while(1) {
 		BaseType_t err = xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY);
 		if (err == pdTRUE) {
-			ESP_LOGI(TAG,"twai_receive identifier=0x%"PRIx32" flags=0x%"PRIx32" data_length_code=%d",
-				rx_msg.identifier, rx_msg.flags, rx_msg.data_length_code);
+			ESP_LOGI(TAG, "twai_receive identifier=0x%"PRIx32" data_length_code=%d",
+				rx_msg.identifier, rx_msg.data_length_code);
 #if CONFIG_FORMAT_TEXT
-			format_text(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_text(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_JSON
-			format_json(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_json(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_XML
-			format_xml(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_xml(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_CSV
-			format_csv(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_csv(rx_msg, buffer, sizeof(buffer)-1);
 #endif
+			if (ret < 0) continue;
+
 			int buflen = strlen(buffer);
 			ret = sendto(sock, buffer, buflen, 0, (struct sockaddr *)&addr, sizeof(addr));
-			LWIP_ASSERT("ret == buflen", ret == buflen);
-			ESP_LOGI(TAG, "sendto ret=%d",ret);
+			ESP_LOGI(TAG, "sendto ret=%d buflen=%d",ret, buflen);
+			if (ret != buflen) {
+				ESP_LOGE(TAG, "sendto fail ret=%d", ret);
+				break;
+			}
 		} else {
 			ESP_LOGE(TAG, "xQueueReceive fail");
 			break;

@@ -14,11 +14,11 @@
 #include "freertos/queue.h"
 #include "esp_system.h"
 #include "esp_log.h"
-#include "driver/twai.h" // Update from V4.2
 #include "lwip/sockets.h"
 #include "mdns.h"
 
 #include <netdb.h> // hostent
+#include "frame.h"
 
 static const char *TAG = "TCP-CLIENT";
 
@@ -70,10 +70,10 @@ esp_err_t connect_server(int *sock, int port, char *host) {
 	}
 }
 
-int format_text(twai_message_t rx_msg, char * buffer, int blen);
-int format_json(twai_message_t rx_msg, char * buffer, int blen);
-int format_xml(twai_message_t rx_msg, char * buffer, int blen);
-int format_csv(twai_message_t rx_msg, char * buffer, int blen);
+int format_text(my_twai_frame_t rx_msg, char * buffer, int blen);
+int format_json(my_twai_frame_t rx_msg, char * buffer, int blen);
+int format_xml(my_twai_frame_t rx_msg, char * buffer, int blen);
+int format_csv(my_twai_frame_t rx_msg, char * buffer, int blen);
 
 esp_err_t query_mdns_host(const char * host_name, char *ip)
 {
@@ -137,7 +137,7 @@ void tcp_client_task(void *pvParameters)
 	int sock;
 	int ret;
 	bool connected = false;
-	twai_message_t rx_msg;
+	my_twai_frame_t rx_msg;
 	char buffer[512];
 	while (1) {
 		BaseType_t err = xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY);
@@ -150,22 +150,25 @@ void tcp_client_task(void *pvParameters)
 				connected = true;
 			}
 
-			ESP_LOGI(TAG,"twai_receive identifier=0x%"PRIx32" flags=0x%"PRIx32" data_length_code=%d",
-				rx_msg.identifier, rx_msg.flags, rx_msg.data_length_code);
+			ESP_LOGI(TAG, "twai_receive identifier=0x%"PRIx32" data_length_code=%d",
+				rx_msg.identifier, rx_msg.data_length_code);
 #if CONFIG_FORMAT_TEXT
-			format_text(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_text(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_JSON
-			format_json(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_json(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_XML
-			format_xml(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_xml(rx_msg, buffer, sizeof(buffer)-1);
 #elif CONFIG_FORMAT_CSV
-			format_csv(rx_msg, buffer, sizeof(buffer)-1);
+			ret = format_csv(rx_msg, buffer, sizeof(buffer)-1);
 #endif
-			ret = send(sock, buffer, strlen(buffer), 0);
-			ESP_LOGI(TAG, "send ret=%d",ret);
-			if (ret < 0) {
-				ESP_LOGW(TAG, "send fail ret=%d", ret);
-				connected = false;
+			if (ret < 0) continue;
+
+			int buflen = strlen(buffer);
+			ret = send(sock, buffer, buflen, 0);
+			ESP_LOGI(TAG, "send ret=%d buflen=%d",ret, buflen);
+			if (ret != buflen) {
+				ESP_LOGE(TAG, "send fail ret=%d", ret);
+				break;
 			}
 		} else {
 			ESP_LOGE(TAG, "xQueueReceive fail");

@@ -20,38 +20,11 @@
 #include "nvs_flash.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "driver/twai.h" // Update from V4.2
 #include "cJSON.h"
 
+#include "frame.h"
+
 static const char *TAG = "MAIN";
-
-static const twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
-
-#if CONFIG_CAN_BITRATE_25
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_25KBITS();
-#define BITRATE "Bitrate is 25 Kbit/s"
-#elif CONFIG_CAN_BITRATE_50
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_50KBITS();
-#define BITRATE "Bitrate is 50 Kbit/s"
-#elif CONFIG_CAN_BITRATE_100
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_100KBITS();
-#define BITRATE "Bitrate is 100 Kbit/s"
-#elif CONFIG_CAN_BITRATE_125
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_125KBITS();
-#define BITRATE "Bitrate is 125 Kbit/s"
-#elif CONFIG_CAN_BITRATE_250
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_250KBITS();
-#define BITRATE "Bitrate is 250 Kbit/s"
-#elif CONFIG_CAN_BITRATE_500
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
-#define BITRATE "Bitrate is 500 Kbit/s"
-#elif CONFIG_CAN_BITRATE_800
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_800KBITS();
-#define BITRATE "Bitrate is 800 Kbit/s"
-#elif CONFIG_CAN_BITRATE_1000
-static const twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
-#define BITRATE "Bitrate is 1 Mbit/s"
-#endif
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
@@ -163,15 +136,15 @@ void udp_client_task(void *pvParameters);
 void tcp_client_task(void *pvParameters);
 void twai_task(void *pvParameters);
 
-int format_text(twai_message_t rx_msg, char * buffer, int blen) {
+int format_text(my_twai_frame_t rx_msg, char * buffer, int blen) {
 	char wk[128];
 	if (rx_msg.extd == 0) {
-		sprintf(buffer, "Standard ID: 0x%03"PRIx32"     ", rx_msg.identifier);
+		sprintf(buffer, "Standard ID: 0x%03"PRIx32"%*s", rx_msg.identifier, 5, "");
 	} else {
 		sprintf(buffer, "Extended ID: 0x%08"PRIx32, rx_msg.identifier);
 	}
 
-	sprintf(wk, " DLC: %d	 Data: ", rx_msg.data_length_code);
+	sprintf(wk, "  DLC: %d	Data: ", rx_msg.data_length_code);
 	strcat(buffer, wk);
 
 	if (rx_msg.rtr == 0) {
@@ -185,11 +158,12 @@ int format_text(twai_message_t rx_msg, char * buffer, int blen) {
 	}
 	if (strlen(buffer) > blen) {
 		ESP_LOGE(TAG, "buffer is too small");
+		return -1;
 	}
 	return strlen(buffer);
 }
 
-int format_json(twai_message_t rx_msg, char * buffer, int blen) {
+int format_json(my_twai_frame_t rx_msg, char * buffer, int blen) {
 	// JSON Serialize
 	cJSON *root = cJSON_CreateObject();
 	if (rx_msg.rtr == 0) {
@@ -223,11 +197,12 @@ int format_json(twai_message_t rx_msg, char * buffer, int blen) {
 	cJSON_Delete(root);
 	if (strlen(buffer) > blen) {
 		ESP_LOGE(TAG, "buffer is too small");
+		return -1;
 	}
 	return strlen(buffer);
 }
 
-int format_xml(twai_message_t rx_msg, char * buffer, int blen) {
+int format_xml(my_twai_frame_t rx_msg, char * buffer, int blen) {
 	char wk[128];
 	strcpy(buffer, "<?xml version=\"1.0\"?>\n");
 	strcat(buffer, "<can>\n");
@@ -269,11 +244,12 @@ int format_xml(twai_message_t rx_msg, char * buffer, int blen) {
 	strcat(buffer, "</can>\n");
 	if (strlen(buffer) > blen) {
 		ESP_LOGE(TAG, "buffer is too small");
+		return -1;
 	}
 	return strlen(buffer);
 }
 
-int format_csv(twai_message_t rx_msg, char * buffer, int blen) {
+int format_csv(my_twai_frame_t rx_msg, char * buffer, int blen) {
 	char wk[128];
 	if (rx_msg.rtr == 0) {
 		strcpy(buffer, "\"Data frame\",");
@@ -306,8 +282,9 @@ int format_csv(twai_message_t rx_msg, char * buffer, int blen) {
 	}
 	if (strlen(buffer) > blen) {
 		ESP_LOGE(TAG, "buffer is too small");
+		return -1;
 	}
-	ESP_LOGI(TAG, "[%s]", buffer);
+	ESP_LOGD(TAG, "[%s]", buffer);
 	return strlen(buffer);
 }
 
@@ -325,19 +302,8 @@ void app_main()
 	// WiFi initialize
 	ESP_ERROR_CHECK(wifi_init_sta());
 
-	// Install and start TWAI driver
-	ESP_LOGI(TAG, "%s",BITRATE);
-	ESP_LOGI(TAG, "CTX_GPIO=%d",CONFIG_CTX_GPIO);
-	ESP_LOGI(TAG, "CRX_GPIO=%d",CONFIG_CRX_GPIO);
-
-	static const twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(CONFIG_CTX_GPIO, CONFIG_CRX_GPIO, TWAI_MODE_NORMAL);
-	ESP_ERROR_CHECK(twai_driver_install(&g_config, &t_config, &f_config));
-	ESP_LOGI(TAG, "Driver installed");
-	ESP_ERROR_CHECK(twai_start());
-	ESP_LOGI(TAG, "Driver started");
-
 	// Create Queue
-	xQueueTwai = xQueueCreate( 10, sizeof(twai_message_t) );
+	xQueueTwai = xQueueCreate( 10, sizeof(my_twai_frame_t) );
 	configASSERT( xQueueTwai );
 
 	// Start tasks
