@@ -140,8 +140,7 @@ void tcp_client_task(void *pvParameters)
 	my_twai_frame_t rx_msg;
 	char buffer[512];
 	while (1) {
-		BaseType_t err = xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY);
-		if (err == pdTRUE) {
+		if (xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY) == pdPASS) {
 			ESP_LOGI(TAG, "connected=%d", connected);
 			if (!connected) {
 				esp_err_t err = connect_server(&sock, CONFIG_TCP_PORT, host);

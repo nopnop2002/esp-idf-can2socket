@@ -27,14 +27,14 @@ static const char *TAG = "TWAI_V6";
 extern QueueHandle_t xQueueTwai;
 
 // Error callback
-static bool IRAM_ATTR twai_listener_on_error_callback(twai_node_handle_t handle, const twai_error_event_data_t *edata, void *user_ctx)
+static bool IRAM_ATTR twai_on_error_callback(twai_node_handle_t handle, const twai_error_event_data_t *edata, void *user_ctx)
 {
 	ESP_EARLY_LOGW(TAG, "bus error: 0x%x", edata->err_flags.val);
 	return false;
 }
 
 // Node state
-static bool IRAM_ATTR twai_listener_on_state_change_callback(twai_node_handle_t handle, const twai_state_change_event_data_t *edata, void *user_ctx)
+static bool IRAM_ATTR twai_on_state_change_callback(twai_node_handle_t handle, const twai_state_change_event_data_t *edata, void *user_ctx)
 {
 	const char *twai_state_name[] = {"error_active", "error_warning", "error_passive", "bus_off"};
 	ESP_EARLY_LOGI(TAG, "state changed: %s -> %s", twai_state_name[edata->old_sta], twai_state_name[edata->new_sta]);
@@ -42,7 +42,7 @@ static bool IRAM_ATTR twai_listener_on_state_change_callback(twai_node_handle_t 
 }
 
 // TWAI receive callback - store data and signal
-static bool IRAM_ATTR twai_listener_rx_callback(twai_node_handle_t handle, const twai_rx_done_event_data_t *edata, void *user_ctx)
+static bool IRAM_ATTR twai_rx_done_callback(twai_node_handle_t handle, const twai_rx_done_event_data_t *edata, void *user_ctx)
 {
 	QueueHandle_t xQueueDevice = (QueueHandle_t)user_ctx;
 	ESP_EARLY_LOGD(TAG, "xQueueDevice=%p", xQueueDevice);
@@ -113,9 +113,9 @@ void twai_task(void *arg)
 
 	// Register callbacks
 	twai_event_callbacks_t callbacks = {
-		.on_rx_done = twai_listener_rx_callback,
-		.on_error = twai_listener_on_error_callback,
-		.on_state_change = twai_listener_on_state_change_callback,
+		.on_rx_done = twai_rx_done_callback,
+		.on_error = twai_on_error_callback,
+		.on_state_change = twai_on_state_change_callback,
 	};
 	ESP_ERROR_CHECK(twai_node_register_event_callbacks(node_hdl, &callbacks, xQueueDevice));
 
@@ -125,7 +125,7 @@ void twai_task(void *arg)
 
 	while (1) {
 		twai_frame_t rx_msg;
-		if (xQueueReceive(xQueueDevice, &rx_msg, portMAX_DELAY)) {
+		if (xQueueReceive(xQueueDevice, &rx_msg, portMAX_DELAY) == pdPASS) {
 
 #if CONFIG_ENABLE_PRINT
 			twai_print_frame(rx_msg);

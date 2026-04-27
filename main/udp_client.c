@@ -64,8 +64,7 @@ void udp_client_task(void *pvParameters) {
 	my_twai_frame_t rx_msg;
 	char buffer[512];
 	while(1) {
-		BaseType_t err = xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY);
-		if (err == pdTRUE) {
+		if (xQueueReceive(xQueueTwai, &rx_msg, portMAX_DELAY) == pdPASS) {
 			ESP_LOGI(TAG, "twai_receive identifier=0x%"PRIx32" data_length_code=%d",
 				rx_msg.identifier, rx_msg.data_length_code);
 #if CONFIG_FORMAT_TEXT
